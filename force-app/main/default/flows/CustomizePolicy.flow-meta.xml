@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <formulas>
+        <name>SpouseYesNo</name>
+        <dataType>String</dataType>
+        <expression>IF ({!userContact.Spouse__c} &gt;= 1, &#39;Yes&#39;, &#39;No&#39;)</expression>
+    </formulas>
+    <interviewLabel>Customize {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Customize Customer Policy</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>Flow</processType>
+    <recordLookups>
+        <name>Get_Contact</name>
+        <label>Get Contact</label>
+        <locationX>355</locationX>
+        <locationY>51</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>New_Prices</targetReference>
+        </connector>
+        <filters>
+            <field>Policy_Number__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Policy_Number</elementReference>
+            </value>
+        </filters>
+        <object>Contact</object>
+        <outputReference>userContact</outputReference>
+        <queriedFields>Id</queriedFields>
+        <queriedFields>Coverage_Cap__c</queriedFields>
+        <queriedFields>Deductible__c</queriedFields>
+        <queriedFields>Premium__c</queriedFields>
+        <queriedFields>Tier__c</queriedFields>
+        <queriedFields>Dependents__c</queriedFields>
+        <queriedFields>Spouse__c</queriedFields>
+        <queriedFields>Customized__c</queriedFields>
+        <queriedFields>Name</queriedFields>
+    </recordLookups>
+    <recordUpdates>
+        <name>Update_Customer_Policy</name>
+        <label>Update Customer Policy</label>
+        <locationX>659</locationX>
+        <locationY>51</locationY>
+        <connector>
+            <targetReference>Confirmation</targetReference>
+        </connector>
+        <filters>
+            <field>Policy_Number__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>Policy_Number</elementReference>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>Coverage_Cap__c</field>
+            <value>
+                <elementReference>Coverage</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Customized__c</field>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Deductible__c</field>
+            <value>
+                <elementReference>Deductible</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Premium__c</field>
+            <value>
+                <elementReference>Premium</elementReference>
+            </value>
+        </inputAssignments>
+        <object>Contact</object>
+    </recordUpdates>
+    <screens>
+        <name>Confirmation</name>
+        <label>Confirmation</label>
+        <locationX>809</locationX>
+        <locationY>51</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <fields>
+            <name>Disp3</name>
+            <fieldText>Changes successfully submitted. Thank you.
+
+Name: {!userContact.Name}
+
+Spouse: {!SpouseYesNo}
+Number of Dependents: {!userContact.Dependents__c}
+
+Tier: {!userContact.Tier__c}
+Premium: {!Premium}
+Coverage Cap: {!Coverage}
+Deductible: {!Deductible}</fieldText>
+            <fieldType>DisplayText</fieldType>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+    <screens>
+        <name>Customize_Customer_Policy</name>
+        <label>Customize Customer Policy</label>
+        <locationX>205</locationX>
+        <locationY>51</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <connector>
+            <targetReference>Get_Contact</targetReference>
+        </connector>
+        <fields>
+            <name>Disp1</name>
+            <fieldText>Input Policy Number of Customer Requesting Customization:</fieldText>
+            <fieldType>DisplayText</fieldType>
+        </fields>
+        <fields>
+            <name>Policy_Number</name>
+            <dataType>String</dataType>
+            <fieldText>Policy Number</fieldText>
+            <fieldType>InputField</fieldType>
+            <isRequired>false</isRequired>
+            <validationRule>
+                <errorMessage>Please enter a 10 digit policy number</errorMessage>
+                <formulaExpression>REGEX({!Policy_Number}, &quot;\\D*?(\\d\\D*?){10}&quot;)</formulaExpression>
+            </validationRule>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+    <screens>
+        <name>New_Prices</name>
+        <label>New Prices</label>
+        <locationX>507</locationX>
+        <locationY>51</locationY>
+        <allowBack>true</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <connector>
+            <targetReference>Update_Customer_Policy</targetReference>
+        </connector>
+        <fields>
+            <name>Disp2</name>
+            <fieldText>Enter new prices for the Policy:
+
+Name: {!userContact.Name}
+
+Tier: {!userContact.Tier__c}
+Spouse: {!SpouseYesNo}
+Number of Dependents: {!userContact.Dependents__c}</fieldText>
+            <fieldType>DisplayText</fieldType>
+        </fields>
+        <fields>
+            <name>Premium</name>
+            <dataType>Currency</dataType>
+            <defaultValue>
+                <elementReference>userContact.Premium__c</elementReference>
+            </defaultValue>
+            <fieldText>Premium</fieldText>
+            <fieldType>InputField</fieldType>
+            <isRequired>true</isRequired>
+            <scale>2</scale>
+            <validationRule>
+                <errorMessage>Please enter a positive value.</errorMessage>
+                <formulaExpression>{!Premium} &gt; 0</formulaExpression>
+            </validationRule>
+        </fields>
+        <fields>
+            <name>Coverage</name>
+            <dataType>Currency</dataType>
+            <defaultValue>
+                <elementReference>userContact.Coverage_Cap__c</elementReference>
+            </defaultValue>
+            <fieldText>Coverage</fieldText>
+            <fieldType>InputField</fieldType>
+            <isRequired>false</isRequired>
+            <scale>2</scale>
+            <validationRule>
+                <errorMessage>Please enter a positive value.</errorMessage>
+                <formulaExpression>{!Coverage} &gt; 0</formulaExpression>
+            </validationRule>
+        </fields>
+        <fields>
+            <name>Deductible</name>
+            <dataType>Currency</dataType>
+            <defaultValue>
+                <elementReference>userContact.Deductible__c</elementReference>
+            </defaultValue>
+            <fieldText>Deductible</fieldText>
+            <fieldType>InputField</fieldType>
+            <isRequired>false</isRequired>
+            <scale>2</scale>
+            <validationRule>
+                <errorMessage>Please enter a positive value.</errorMessage>
+                <formulaExpression>{!Deductible} &gt; 0</formulaExpression>
+            </validationRule>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+    <startElementReference>Customize_Customer_Policy</startElementReference>
+    <status>Active</status>
+    <variables>
+        <name>userContact</name>
+        <dataType>SObject</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>true</isOutput>
+        <objectType>Contact</objectType>
+    </variables>
+</Flow>
